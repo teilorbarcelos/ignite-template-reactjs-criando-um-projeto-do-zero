@@ -50,27 +50,37 @@ export default function Home({ postsPagination }: HomeProps) {
         <div className={styles.posts}>
 
           {
-            postsPagination?.results.map(post => (
+            postsPagination.results.map(post => (
               <Link key={post.uid} href={`/post/${post.uid}`}>
                 <a>
                   <h1>{post.data.title}</h1>
                   <h2>{post.data.subtitle}</h2>
-                  <time><FiCalendar /> {
-                    format(
-                      new Date(post.first_publication_date),
-                      'dd MMM yyyy',
-                      {
-                        locale: ptBR
-                      }
-                    )
-                  }</time>
-                  <p><FiUser /> {post.data.author}</p>
+                  <footer>
+                    <time><FiCalendar /> {
+                      format(
+                        new Date(post.first_publication_date),
+                        'dd MMM yyyy',
+                        {
+                          locale: ptBR
+                        }
+                      )
+                    }</time>
+                    <p><FiUser /> {post.data.author}</p>
+                  </footer>
                 </a>
               </Link>
             ))
           }
 
         </div>
+
+        {
+          postsPagination.next_page &&
+          <Link href={postsPagination.next_page}>
+            <a className={styles.morePostsLink}>Carregar mais posts</a>
+          </Link>
+        }
+
       </main>
     </>
   )
