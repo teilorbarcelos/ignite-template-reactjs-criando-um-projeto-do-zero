@@ -8,11 +8,10 @@ import ptBR from 'date-fns/locale/pt-BR'
 
 import { getPrismicClient } from '../services/prismic'
 
-import commonStyles from '../styles/common.module.scss'
 import styles from './home.module.scss'
 import { FiCalendar, FiUser } from 'react-icons/fi'
 import Header from '../components/Header'
-import { RichText } from 'prismic-dom'
+import { useState } from 'react'
 
 interface Post {
   uid?: string
@@ -34,8 +33,51 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
-  console.log(postsPagination)
   // TODO
+  const [nextPage, setNextPage] = useState<string | null>(postsPagination.next_page)
+
+  function dateFormat(date: string) {
+    const formatedDate = format(
+      new Date(date),
+      'dd MMM yyyy',
+      {
+        locale: ptBR
+      }
+    )
+
+    return formatedDate
+  }
+
+  const [posts, setPosts] = useState<Post[]>(
+    postsPagination.results.map(post => {
+      return {
+        ...post,
+        first_publication_date: dateFormat(post.first_publication_date)
+      }
+    })
+  )
+
+  async function handleChargeMore() {
+    if (!nextPage) {
+      return
+    }
+
+    const nextPosts = await (await fetch(nextPage)).json() as PostPagination
+
+    setNextPage(nextPosts.next_page)
+
+    const newPosts = nextPosts.results.map(post => {
+      return {
+        ...post,
+        first_publication_date: dateFormat(post.first_publication_date)
+      }
+    })
+
+    setPosts([
+      ...posts,
+      ...newPosts
+    ])
+  }
 
   return (
     <>
@@ -50,21 +92,13 @@ export default function Home({ postsPagination }: HomeProps) {
         <div className={styles.posts}>
 
           {
-            postsPagination.results.map(post => (
+            posts.map(post => (
               <Link key={post.uid} href={`/post/${post.uid}`}>
                 <a>
                   <h1>{post.data.title}</h1>
                   <h2>{post.data.subtitle}</h2>
                   <footer>
-                    <time><FiCalendar /> {
-                      format(
-                        new Date(post.first_publication_date),
-                        'dd MMM yyyy',
-                        {
-                          locale: ptBR
-                        }
-                      )
-                    }</time>
+                    <time><FiCalendar /> {post.first_publication_date}</time>
                     <p><FiUser /> {post.data.author}</p>
                   </footer>
                 </a>
@@ -75,10 +109,12 @@ export default function Home({ postsPagination }: HomeProps) {
         </div>
 
         {
-          postsPagination.next_page &&
-          <Link href={postsPagination.next_page}>
-            <a className={styles.morePostsLink}>Carregar mais posts</a>
-          </Link>
+          nextPage &&
+          <div className={styles.morePostsLink}>
+            <a
+              onClick={handleChargeMore}
+            >Carregar mais posts</a>
+          </div>
         }
 
       </main>
