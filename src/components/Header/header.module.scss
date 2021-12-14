@@ -4,6 +4,11 @@
   align-items: center;
   justify-content: center;
   height: 170px;
+
+  &.post {
+    height: 105px;
+  }
+
   a {
     width: 100%;
     max-width: 700px;
