@@ -2,15 +2,12 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { GetStaticProps } from 'next'
 import { useRouter } from 'next/router'
-import { RichText } from 'prismic-dom'
-import { useEffect, useState } from 'react'
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi'
 import Banner from '../../components/Banner'
 import Header from '../../components/Header'
 
 import { getPrismicClient } from '../../services/prismic'
 
-import commonStyles from '../../styles/common.module.scss'
 import styles from './post.module.scss'
 
 interface Post {
