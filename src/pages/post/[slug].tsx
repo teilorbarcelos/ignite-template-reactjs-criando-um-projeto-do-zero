@@ -70,20 +70,20 @@ export default function Post({ post }: PostProps) {
         <h1>{post.data.title}</h1>
         <div className={styles.postInfo}>
           <time><FiCalendar /> {dateFormat(post.first_publication_date)}</time>
-          <p><FiUser /> {post.data.author}</p>
-          <p className={styles.estimatedTime}><FiClock /> {readTime} min</p>
+          <h6><FiUser /> {post.data.author}</h6>
+          <h6 className={styles.estimatedTime}><FiClock /> {readTime} min</h6>
         </div>
 
         {
-          post.data.content.map(contentItem => (
-            <>
+          post.data.content.map((contentItem, index) => (
+            <div key={index}>
               <h2>{contentItem.heading}</h2>
               {
-                contentItem.body.map(bodyItem => (
-                  <p>{bodyItem.text}</p>
+                contentItem.body.map((bodyItem, index) => (
+                  <p key={index}>{bodyItem.text}</p>
                 ))
               }
-            </>
+            </div>
           ))
         }
       </main>
