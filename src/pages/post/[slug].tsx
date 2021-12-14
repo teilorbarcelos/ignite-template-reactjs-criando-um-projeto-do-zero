@@ -11,6 +11,7 @@ import Header from '../../components/Header'
 import { getPrismicClient } from '../../services/prismic'
 
 import styles from './post.module.scss'
+import { Comments } from '../../components/Comments'
 
 interface Post {
   first_publication_date: string | null
@@ -135,6 +136,8 @@ export default function Post({
               }
             </div>
           </div>
+
+          <Comments />
 
           <div className={styles.outPreviewModeButton}>
             <p>Sair do modo Preview</p>
