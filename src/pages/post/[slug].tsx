@@ -7,6 +7,7 @@ import { useRouter } from 'next/router'
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi'
 import Banner from '../../components/Banner'
 import Header from '../../components/Header'
+import useUpdatePreviewRef from '../../utils/useUpdatePreviewRef'
 
 import { getPrismicClient } from '../../services/prismic'
 
@@ -14,6 +15,7 @@ import styles from './post.module.scss'
 import { Comments } from '../../components/Comments'
 
 interface Post {
+  id: string
   first_publication_date: string | null
   last_publication_date: string | null
   data: {
@@ -36,14 +38,18 @@ interface PostProps {
   post: Post
   previousPost: Post
   nextPost: Post
+  // preview: boolean
+  previewRef: any
 }
 
 export default function Post({
   post,
   previousPost,
-  nextPost
+  nextPost,
+  previewRef
 }: PostProps) {
   const router = useRouter()
+  // console.log(previewRef)
 
   if (router.isFallback) {
     return <p>Carregando...</p>
@@ -77,6 +83,8 @@ export default function Post({
   }, 0)
 
   const readTime = Math.ceil(totalWords / 200)
+
+  useUpdatePreviewRef(previewRef, post.id)
 
   return (
     <>
@@ -139,9 +147,14 @@ export default function Post({
 
           <Comments />
 
-          <div className={styles.outPreviewModeButton}>
-            <p>Sair do modo Preview</p>
-          </div>
+          {
+            previewRef &&
+            <div className={styles.outPreviewModeButton}>
+              <Link href="/api/exit-preview">
+                <a>Sair do modo Preview</a>
+              </Link>
+            </div>
+          }
         </div>
       </main>
     </>
@@ -166,13 +179,19 @@ export const getStaticPaths = () => {
   }
 }
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({
+  // preview = false,
+  previewData,
+  params
+}) => {
   const prismic = getPrismicClient()
   const { slug } = params
-  const response = await prismic.getByUID('posts', String(slug), {})
+  console.log(previewData)
 
-  // TODO
-  const post = response
+  const previewRef = previewData ? previewData.ref : null
+  const refOption = previewRef ? { ref: previewRef } : null
+
+  const post = await prismic.getByUID('posts', String(slug), refOption) || {} as Post
 
   const previousPostResponse = (await prismic.query([
     Prismic.predicates.at('document.type', 'posts')
@@ -202,7 +221,8 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     props: {
       post,
       previousPost,
-      nextPost
+      nextPost,
+      previewRef
     },
     revalidate: 60 * 30 // time to generate new page (one time a day) (Only for SSG)
   }
