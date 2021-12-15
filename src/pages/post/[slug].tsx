@@ -7,7 +7,6 @@ import { useRouter } from 'next/router'
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi'
 import Banner from '../../components/Banner'
 import Header from '../../components/Header'
-import useUpdatePreviewRef from '../../utils/useUpdatePreviewRef'
 
 import { getPrismicClient } from '../../services/prismic'
 
@@ -38,18 +37,16 @@ interface PostProps {
   post: Post
   previousPost: Post
   nextPost: Post
-  // preview: boolean
-  previewRef: any
+  preview: boolean
 }
 
 export default function Post({
   post,
   previousPost,
   nextPost,
-  previewRef
+  preview
 }: PostProps) {
   const router = useRouter()
-  // console.log(previewRef)
 
   if (router.isFallback) {
     return <p>Carregando...</p>
@@ -83,8 +80,6 @@ export default function Post({
   }, 0)
 
   const readTime = Math.ceil(totalWords / 200)
-
-  useUpdatePreviewRef(previewRef, post.id)
 
   return (
     <>
@@ -148,7 +143,7 @@ export default function Post({
           <Comments />
 
           {
-            previewRef &&
+            preview &&
             <div className={styles.outPreviewModeButton}>
               <Link href="/api/exit-preview">
                 <a>Sair do modo Preview</a>
@@ -180,18 +175,16 @@ export const getStaticPaths = () => {
 }
 
 export const getStaticProps: GetStaticProps = async ({
-  // preview = false,
+  preview = false,
   previewData,
   params
 }) => {
   const prismic = getPrismicClient()
   const { slug } = params
-  console.log(previewData)
 
-  const previewRef = previewData ? previewData.ref : null
-  const refOption = previewRef ? { ref: previewRef } : null
-
-  const post = await prismic.getByUID('posts', String(slug), refOption) || {} as Post
+  const post = await prismic.getByUID('posts', String(slug), {
+    ref: previewData?.ref || null,
+  }) || {} as Post
 
   const previousPostResponse = (await prismic.query([
     Prismic.predicates.at('document.type', 'posts')
@@ -222,7 +215,7 @@ export const getStaticProps: GetStaticProps = async ({
       post,
       previousPost,
       nextPost,
-      previewRef
+      preview
     },
     revalidate: 60 * 30 // time to generate new page (one time a day) (Only for SSG)
   }

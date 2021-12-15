@@ -2,13 +2,14 @@ import { Document } from '@prismicio/client/types/documents'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getPrismicClient } from '../../services/prismic'
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
-  function linkResolver(doc: Document): string {
-    if (doc.type === 'posts') {
-      return `/post/${doc.uid}`
-    }
-    return '/'
+function linkResolver(doc: Document): string {
+  if (doc.type === 'posts') {
+    return `/post/${doc.uid}`
   }
+  return '/'
+}
+
+export default async (req: NextApiRequest, res: NextApiResponse) => {
 
   const { token: ref, documentId } = req.query
   const redirectUrl = await getPrismicClient(req)
@@ -26,5 +27,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     <script>window.location.href = '${redirectUrl}'</script>
     </head>`
   )
+
   res.end()
 }
